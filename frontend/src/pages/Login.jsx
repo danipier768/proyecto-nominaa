@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Login.css';
+import logo from '../assets/dsv.png';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -60,10 +61,12 @@ const Login = () => {
 
     return (
         <div className="login-container">
+            
             <div className="login-box">
                 {/* Logo o título */}
                 <div className="login-header">
-                    <h1>🔐 Sistema de Nómina</h1>
+                    
+                    <h1>Sistema de Nómina DSV</h1>
                     <p>Inicia sesión para continuar</p>
                 </div>
 
@@ -125,9 +128,10 @@ const Login = () => {
 
                 {/* Información de prueba */}
                 <div className="login-info">
-                    <p><strong>Usuario de prueba:</strong></p>
+                   <img className='login-logo' src={logo} alt="logo DSV" />
+                    {/* <p><strong>Usuario de prueba:</strong></p>
                     <p>Usuario: admin</p>
-                    <p>Contraseña: Admin123!</p>
+                    <p>Contraseña: Admin123!</p> */}
                 </div>
             </div>
         </div>

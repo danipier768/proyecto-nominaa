@@ -9,7 +9,7 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #003cffc5 0%, #8d8d8d 100%);;
     padding: 20px;
 }
 
@@ -18,7 +18,7 @@
     background: white;
     border-radius: 10px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    padding: 40px;
+    padding: 30px;
     width: 100%;
     max-width: 400px;
 }
@@ -108,7 +108,7 @@
 /* Botón de login */
 .login-button {
     padding: 14px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-color: #001c79;
     color: white;
     border: none;
     border-radius: 5px;
@@ -134,22 +134,18 @@
 
 /* Información de prueba */
 .login-info {
-    margin-top: 30px;
-    padding-top: 20px;
     border-top: 1px solid #e0e0e0;
     text-align: center;
-    font-size: 13px;
     color: #666;
 }
 
-.login-info p {
-    margin: 5px 0;
-}
 
 .login-info strong {
     color: #333;
 }
-
+.login-logo{
+    width: 40%;
+}
 /* Responsive */
 @media (max-width: 480px) {
     .login-box {

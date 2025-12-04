@@ -25,7 +25,7 @@ const Navbar = () => {
             <div className="navbar-container">
                 {/* Logo / Título */}
                 <Link to="/dashboard" className="navbar-brand">
-                    <span className="navbar-icon"><img src={logo} alt="logo DSV" /></span>
+                    <span className="navbar-icon"><img className='img-logo' src={logo} alt="logo DSV" /></span>
                     <span className="navbar-title">Sistema de Nómina</span>
                 </Link>
 
