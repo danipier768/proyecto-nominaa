@@ -16,7 +16,7 @@ const Users = () => {
     const [showModal, setShowModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
-    
+
     // Formulario para crear usuario
     const [formData, setFormData] = useState({
         username: '',
@@ -185,9 +185,9 @@ const Users = () => {
             <Navbar />
             <div className="employees-container">
                 <div className="employees-header">
-                    <h1>🔐 Gestión de Usuarios</h1>
-                    <button onClick={openModal} className="btn btn-primary">
-                        ➕ Nuevo Usuario
+                    <h1><i className="fa-solid fa-user-shield"></i> Gestión de Usuarios</h1>
+                    <button onClick={openModal} className="btn btn-gray-light">
+                        <i className="fa-solid fa-user-plus"></i> Nuevo Usuario
                     </button>
                 </div>
 
@@ -229,7 +229,7 @@ const Users = () => {
                                             </td>
                                             <td>{user.empleado_nombre || 'Sin asociar'}</td>
                                             <td>
-                                                <span 
+                                                <span
                                                     className={`badge badge-${user.activo ? 'success' : 'danger'}`}
                                                     style={{ cursor: 'pointer' }}
                                                     onClick={() => handleToggleStatus(user.id_usuario)}
@@ -240,19 +240,19 @@ const Users = () => {
                                             </td>
                                             <td>
                                                 <div className="action-buttons">
-                                                    <button 
+                                                    <button
                                                         onClick={() => openEditModal(user)}
                                                         className="btn-action btn-edit"
                                                         title="Editar"
                                                     >
-                                                        ✏️
+                                                        <i className="fa-solid fa-pen-to-square"></i>
                                                     </button>
-                                                    <button 
+                                                    <button
                                                         onClick={() => handleDelete(user.id_usuario)}
                                                         className="btn-action btn-delete"
                                                         title="Eliminar"
                                                     >
-                                                        🗑️
+                                                        <i className="fa-solid fa-trash"></i>
                                                     </button>
                                                 </div>
                                             </td>
@@ -269,8 +269,8 @@ const Users = () => {
                     <div className="modal-overlay" onClick={closeModal}>
                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                             <div className="modal-header">
-                                <h2>➕ Nuevo Usuario</h2>
-                                <button onClick={closeModal} className="close-btn">✕</button>
+                                <h2><i className="fa-solid fa-user-plus"></i> Nuevo Usuario</h2>
+                                <button onClick={closeModal} className="close-btn"><i className="fa-solid fa-xmark"></i></button>
                             </div>
 
                             <form onSubmit={handleSubmit} className="employee-form">
@@ -283,6 +283,7 @@ const Users = () => {
                                         onChange={handleChange}
                                         placeholder="usuario123"
                                         required
+                                        maxLength={30}
                                     />
                                 </div>
 
@@ -296,6 +297,7 @@ const Users = () => {
                                         placeholder="Mínimo 6 caracteres"
                                         required
                                         minLength={6}
+                                        maxLength={30}
                                     />
                                 </div>
 
@@ -308,6 +310,7 @@ const Users = () => {
                                         onChange={handleChange}
                                         placeholder="usuario@empresa.com"
                                         required
+                                        maxLength={60}
                                     />
                                 </div>
 
@@ -345,10 +348,10 @@ const Users = () => {
                                 </div>
 
                                 <div className="modal-footer">
-                                    <button type="button" onClick={closeModal} className="btn btn-secondary">
+                                    <button type="button" onClick={closeModal} className="btn btn-cancel-red">
                                         Cancelar
                                     </button>
-                                    <button type="submit" className="btn btn-primary">
+                                    <button type="submit" className="btn btn-gray-light">
                                         Crear Usuario
                                     </button>
                                 </div>
@@ -362,8 +365,8 @@ const Users = () => {
                     <div className="modal-overlay" onClick={closeEditModal}>
                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                             <div className="modal-header">
-                                <h2>✏️ Editar Usuario</h2>
-                                <button onClick={closeEditModal} className="close-btn">✕</button>
+                                <h2><i className="fa-solid fa-pen-to-square"></i> Editar Usuario</h2>
+                                <button onClick={closeEditModal} className="close-btn"><i className="fa-solid fa-xmark"></i></button>
                             </div>
 
                             <form onSubmit={handleEditSubmit} className="employee-form">
@@ -388,6 +391,7 @@ const Users = () => {
                                         value={editFormData.email}
                                         onChange={handleEditChange}
                                         required
+                                        maxLength={60}
                                     />
                                 </div>
 
@@ -427,10 +431,10 @@ const Users = () => {
                                 </div>
 
                                 <div className="modal-footer">
-                                    <button type="button" onClick={closeEditModal} className="btn btn-secondary">
+                                    <button type="button" onClick={closeEditModal} className="btn btn-cancel-red">
                                         Cancelar
                                     </button>
-                                    <button type="submit" className="btn btn-primary">
+                                    <button type="submit" className="btn btn-gray-light">
                                         Actualizar Usuario
                                     </button>
                                 </div>

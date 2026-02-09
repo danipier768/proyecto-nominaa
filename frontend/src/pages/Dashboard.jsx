@@ -16,12 +16,12 @@ const Dashboard = () => {
             <Navbar />
             <div className="dashboard-container">
                 <div className="dashboard-header">
-                    <h1>🏠 Dashboard</h1>
+                    <h1><i className="fa-solid fa-house"></i> Dashboard</h1>
                     <p>Bienvenido, <strong>{user?.username}</strong></p>
                 </div>
 
                 <div className="user-info-card">
-                    <h2>📋 Información del Usuario</h2>
+                    <h2><i className="fa-solid fa-circle-info"></i> Información del Usuario</h2>
                     <div className="info-grid">
                         <div className="info-item">
                             <span className="info-label">Usuario:</span>
@@ -43,7 +43,7 @@ const Dashboard = () => {
                 <div className="cards-grid">
                     {/* Card de Empleados */}
                     <Link to="/employees" className="dashboard-card">
-                        <div className="card-icon">👥</div>
+                        <div className="card-icon"><i className="fa-solid fa-users"></i></div>
                         <h3>Empleados</h3>
                         <p>Gestiona la información de los empleados</p>
                         <span className="card-action">Ver empleados →</span>
@@ -52,7 +52,7 @@ const Dashboard = () => {
                     {/* Card de Usuarios - Solo Admin y RRHH */}
                     {isAdminOrRRHH() && (
                         <Link to="/users" className="dashboard-card">
-                            <div className="card-icon">🔐</div>
+                            <div className="card-icon"><i className="fa-solid fa-user-shield"></i></div>
                             <h3>Usuarios</h3>
                             <p>Administra usuarios del sistema</p>
                             <span className="card-action">Gestionar usuarios →</span>
@@ -61,7 +61,7 @@ const Dashboard = () => {
 
                     {/* Card de Nómina (próximamente) */}
                     <div className="dashboard-card disabled">
-                        <div className="card-icon">💰</div>
+                        <div className="card-icon"><i className="fa-solid fa-money-bill"></i></div>
                         <h3>Nómina</h3>
                         <p>Gestión de nómina y pagos</p>
                         <span className="card-action">Próximamente...</span>
@@ -69,7 +69,7 @@ const Dashboard = () => {
 
                     {/* Card de Reportes (próximamente) */}
                     <div className="dashboard-card disabled">
-                        <div className="card-icon">📊</div>
+                        <div className="card-icon"><i className="fa-solid fa-chart-bar"></i></div>
                         <h3>Reportes</h3>
                         <p>Genera reportes y estadísticas</p>
                         <span className="card-action">Próximamente...</span>
@@ -78,14 +78,14 @@ const Dashboard = () => {
 
                 {/* Sección de accesos rápidos */}
                 <div className="quick-actions">
-                    <h2>⚡ Accesos Rápidos</h2>
+                    <h2><i className="fa-solid fa-bolt"></i> Accesos Rápidos</h2>
                     <div className="actions-grid">
                         <Link to="/employees" className="quick-action-btn">
-                            📋 Ver empleados
+                            <i className="fa-solid fa-users"></i> <p style={{ marginLeft: '10px' }}>Ver empleados</p>
                         </Link>
                         {isAdminOrRRHH() && (
                             <Link to="/users" className="quick-action-btn">
-                                ➕ Registrar usuario
+                                <i className="fa-solid fa-user-plus"></i> <p style={{ marginLeft: '10px' }}>Registrar usuario</p>
                             </Link>
                         )}
                     </div>

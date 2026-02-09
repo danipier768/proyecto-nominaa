@@ -32,14 +32,14 @@ const Navbar = () => {
                 {/* Links de navegación */}
                 <div className="navbar-menu">
                     <Link to="/dashboard" className="nav-link">
-                        🏠 Dashboard
+                        <i className="fa-solid fa-house"></i> Dashboard
                     </Link>
                     <Link to="/employees" className="nav-link">
-                        👥 Empleados
+                        <i className="fa-solid fa-users"></i> Empleados
                     </Link>
                     {isAdminOrRRHH() && (
                         <Link to="/users" className="nav-link">
-                            🔐 Usuarios
+                            <i className="fa-solid fa-user-shield"></i> Usuarios
                         </Link>
                     )}
                 </div>
@@ -51,7 +51,7 @@ const Navbar = () => {
                         <span className="user-role">{user?.rol}</span>
                     </div>
                     <button onClick={handleLogout} className="logout-btn">
-                        🚪 Salir
+                        <i className="fa-solid fa-right-from-bracket"></i> Salir
                     </button>
                 </div>
             </div>

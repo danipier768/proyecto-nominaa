@@ -11,17 +11,17 @@ import '../styles/Employees.css';
 
 const Employees = () => {
     const { isAdminOrRRHH } = useAuth();
-    
+
     // Estados
     const [employees, setEmployees] = useState([]);
-    const [cargos, setCargos] = useState([]); // 👈 NUEVO
-    const [departamentos, setDepartamentos] = useState([]); // 👈 NUEVO
+    const [cargos, setCargos] = useState([]);
+    const [departamentos, setDepartamentos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [editingEmployee, setEditingEmployee] = useState(null);
-    
+
     // Formulario
     const [formData, setFormData] = useState({
         nombres: '',
@@ -39,7 +39,7 @@ const Employees = () => {
     // ========================================
     useEffect(() => {
         fetchEmployees();
-        fetchCatalogs(); // 👈 NUEVO
+        fetchCatalogs();
     }, []);
 
     const fetchEmployees = async () => {
@@ -65,7 +65,7 @@ const Employees = () => {
                 api.get('/catalogs/cargos'),
                 api.get('/catalogs/departamentos')
             ]);
-            
+
             setCargos(cargosRes.data.data || []);
             setDepartamentos(deptosRes.data.data || []);
         } catch (err) {
@@ -159,7 +159,7 @@ const Employees = () => {
     // ========================================
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         try {
             if (editingEmployee) {
                 // Actualizar
@@ -170,7 +170,7 @@ const Employees = () => {
                 await api.post('/employees', formData);
                 alert('Empleado creado exitosamente');
             }
-            
+
             closeModal();
             fetchEmployees();
         } catch (err) {
@@ -194,16 +194,31 @@ const Employees = () => {
             alert(err.response?.data?.message || 'Error al eliminar empleado');
         }
     };
+    // Función para validar fecha de nacimiento (mayor de 18 años)
+    const getMaxBirthDate = () => {
+        const today = new Date();
+        const eighteenYearsAgo = new Date(
+            today.getFullYear() - 18,
+            today.getMonth(),
+            today.getDate()
+        );
+        return eighteenYearsAgo.toISOString().split('T')[0];
+    };
+    // Función para validar fecha de ingreso (no permitir fechas futuras)
+    const getTodayDate = () => {
+        const today = new Date();
+        return today.toISOString().split('T')[0];
+    };
 
     return (
         <>
             <Navbar />
             <div className="employees-container">
                 <div className="employees-header">
-                    <h1>👥 Gestión de Empleados</h1>
+                    <h1> <i className="fa-solid fa-person"></i><i className="fa-solid fa-person-dress"></i> Gestión de Empleados</h1>
                     {isAdminOrRRHH() && (
                         <button onClick={() => openModal()} className="btn btn-dark">
-                            ➕ Nuevo Empleado
+                            <i className="fa-solid fa-user-plus"></i> Nuevo Empleado
                         </button>
                     )}
                 </div>
@@ -217,12 +232,12 @@ const Employees = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                     />
-                    <button onClick={handleSearch} className="btn btn-primary">
-                        🔍 Buscar
+                    <button onClick={handleSearch} className="btn btn-gray-light">
+                        <i className="fa-solid fa-magnifying-glass"></i> Buscar
                     </button>
                     {searchTerm && (
                         <button onClick={() => { setSearchTerm(''); fetchEmployees(); }} className="btn btn-secondary">
-                            ✕ Limpiar
+                            <i className="fa-solid fa-trash"></i> Limpiar
                         </button>
                     )}
                 </div>
@@ -267,19 +282,19 @@ const Employees = () => {
                                             {isAdminOrRRHH() && (
                                                 <td>
                                                     <div className="action-buttons">
-                                                        <button 
+                                                        <button
                                                             onClick={() => openModal(employee)}
                                                             className="btn-action btn-edit"
                                                             title="Editar"
                                                         >
-                                                            ✏️
+                                                            <i className="fa-solid fa-pen-to-square"></i>
                                                         </button>
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleDelete(employee.id_empleado)}
                                                             className="btn-action btn-delete"
                                                             title="Eliminar"
                                                         >
-                                                            🗑️
+                                                            <i className="fa-solid fa-trash"></i>
                                                         </button>
                                                     </div>
                                                 </td>
@@ -297,10 +312,10 @@ const Employees = () => {
                     <div className="modal-overlay" onClick={closeModal}>
                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                             <div className="modal-header">
-                                <h2>{editingEmployee ? '✏️ Editar Empleado' : '➕ Nuevo Empleado'}</h2>
-                                <button onClick={closeModal} className="close-btn">✕</button>
+                                <h2>{editingEmployee ? <><i className="fa-solid fa-pen-to-square"></i> Editar Empleado</> : <><i className="fa-solid fa-user-plus"></i> Nuevo Empleado</>}</h2>
+                                <button onClick={closeModal} className="close-btn"><i className="fa-solid fa-xmark"></i></button>
                             </div>
-                            
+
                             <form onSubmit={handleSubmit} className="employee-form">
                                 <div className="form-row">
                                     <div className="form-group">
@@ -311,6 +326,7 @@ const Employees = () => {
                                             value={formData.nombres}
                                             onChange={handleChange}
                                             required
+                                            maxLength={40}
                                         />
                                     </div>
                                     <div className="form-group">
@@ -321,6 +337,7 @@ const Employees = () => {
                                             value={formData.apellidos}
                                             onChange={handleChange}
                                             required
+                                            maxLength={40}
                                         />
                                     </div>
                                 </div>
@@ -343,7 +360,7 @@ const Employees = () => {
                                     <div className="form-group">
                                         <label>Número de Identificación *</label>
                                         <input
-                                            type="text"
+                                            type="number"
                                             name="numero_identificacion"
                                             value={formData.numero_identificacion}
                                             onChange={handleChange}
@@ -360,6 +377,7 @@ const Employees = () => {
                                             name="fecha_nacimiento"
                                             value={formData.fecha_nacimiento}
                                             onChange={handleChange}
+                                            max={getMaxBirthDate()}
                                         />
                                     </div>
                                     <div className="form-group">
@@ -369,6 +387,7 @@ const Employees = () => {
                                             name="fecha_ingreso"
                                             value={formData.fecha_ingreso}
                                             onChange={handleChange}
+                                            max={getTodayDate()}
                                         />
                                     </div>
                                 </div>
@@ -410,10 +429,10 @@ const Employees = () => {
                                 </div>
 
                                 <div className="modal-footer">
-                                    <button type="button" onClick={closeModal} className="btn btn-secondary">
+                                    <button type="button" onClick={closeModal} className="btn btn-cancel-red">
                                         Cancelar
                                     </button>
-                                    <button type="submit" className="btn btn-primary">
+                                    <button type="submit" className="btn btn-gray-light">
                                         {editingEmployee ? 'Actualizar' : 'Crear'} Empleado
                                     </button>
                                 </div>

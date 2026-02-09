@@ -29,4 +29,4 @@ const testConnection = async () =>{
 module.exports = {
     pool: promisePool,
     testConnection
-}
+} 

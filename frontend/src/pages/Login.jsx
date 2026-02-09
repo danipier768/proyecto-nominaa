@@ -91,6 +91,7 @@ const Login = () => {
                             placeholder="Ingresa tu usuario"
                             required
                             disabled={loading}
+                            maxLength={30}
                         />
                     </div>
 
