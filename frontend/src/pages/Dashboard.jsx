@@ -9,7 +9,7 @@ import Navbar from '../components/Navbar';
 import '../styles/Dashboard.css';
 
 const Dashboard = () => {
-    const { user, isAdminOrRRHH } = useAuth();
+    const { user, isAdmin } = useAuth();
 
     return (
         <>
@@ -50,7 +50,7 @@ const Dashboard = () => {
                     </Link>
 
                     {/* Card de Usuarios - Solo Admin y RRHH */}
-                    {isAdminOrRRHH() && (
+                    {isAdmin() && (
                         <Link to="/users" className="dashboard-card">
                             <div className="card-icon"><i className="fa-solid fa-user-shield"></i></div>
                             <h3>Usuarios</h3>
@@ -83,7 +83,7 @@ const Dashboard = () => {
                         <Link to="/employees" className="quick-action-btn">
                             <i className="fa-solid fa-users"></i> <p style={{ marginLeft: '10px' }}>Ver empleados</p>
                         </Link>
-                        {isAdminOrRRHH() && (
+                        {isAdmin() && (
                             <Link to="/users" className="quick-action-btn">
                                 <i className="fa-solid fa-user-plus"></i> <p style={{ marginLeft: '10px' }}>Registrar usuario</p>
                             </Link>
