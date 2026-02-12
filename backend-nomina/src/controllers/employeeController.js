@@ -94,20 +94,31 @@ const { pool } = require("../config/database.js");
 
 const getAllEmployees = async (req, res) => {
   try {
+    const isEmployeeRole = req.user?.rol === 'EMPLEADO';
+
+    if (isEmployeeRole && !req.user?.id_empleado) {
+      return res.status(403).json({
+        success: false,
+        message: 'No tienes un empleado asociado para consultar información',
+      });
+    }
+
     //parametros de paginacion(
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
 
     //contar total empleados
-    const [countResult] = await pool.query(
-      `SELECT COUNT(*) as total FROM empleados`
-    );
+    const [countResult] = isEmployeeRole
+      ? await pool.query(
+          `SELECT COUNT(*) as total FROM empleados WHERE id_empleado = ?`,
+          [req.user.id_empleado]
+        )
+      : await pool.query(`SELECT COUNT(*) as total FROM empleados`);
     const total = countResult[0].total;
 
     //Obtener empleados con informacion relacionada
-    const [emplyees] = await pool.query(
-      `SELECT 
+    const employeesQuery = `SELECT 
                 e.id_empleado,
                 e.nombres,
                 e.apellidos,
@@ -123,10 +134,15 @@ const getAllEmployees = async (req, res) => {
              LEFT JOIN cargos c ON e.id_cargo = c.id_cargo
              LEFT JOIN departamentos d ON e.id_departamento = d.id_departamento
              LEFT JOIN usuarios u ON u.id_empleado = e.id_empleado
+             ${isEmployeeRole ? 'WHERE e.id_empleado = ?' : ''}
              ORDER BY e.apellidos, e.nombres
-             LIMIT ? OFFSET ?`,
-      [limit, offset]
-    );
+             LIMIT ? OFFSET ?`;
+
+    const queryParams = isEmployeeRole
+      ? [req.user.id_empleado, limit, offset]
+      : [limit, offset];
+
+    const [emplyees] = await pool.query(employeesQuery, queryParams);
 
     res.json({
       succes: true,
@@ -152,6 +168,21 @@ const getAllEmployees = async (req, res) => {
 const getEmployeeById = async (req, res) => {
   try {
     const { id } = req.params;
+    const isEmployeeRole = req.user?.rol === 'EMPLEADO';
+
+    if (isEmployeeRole && !req.user?.id_empleado) {
+      return res.status(403).json({
+        success: false,
+        message: 'No tienes un empleado asociado para consultar información',
+      });
+    }
+
+    if (isEmployeeRole && Number(id) !== Number(req.user.id_empleado)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Solo puedes consultar tu información de empleado',
+      });
+    }
 
     const [employees] = await pool.query(
       `SELECT 
@@ -432,6 +463,15 @@ const deleteEmployee = async (req, res) => {
 const searchEmployees = async (req, res) => {
   try {
     const { q } = req.query; //q = query (termino de busqueda)
+    const isEmployeeRole = req.user?.rol === 'EMPLEADO';
+
+    if (isEmployeeRole && !req.user?.id_empleado) {
+      return res.status(403).json({
+        success: false,
+        message: 'No tienes un empleado asociado para consultar información',
+      });
+    }
+
     if (!q || q.trim() === "") {
       return res.status(400).json({
         success: false,
@@ -451,12 +491,15 @@ const searchEmployees = async (req, res) => {
              FROM empleados e
              LEFT JOIN cargos c ON e.id_cargo = c.id_cargo
              LEFT JOIN departamentos d ON e.id_departamento = d.id_departamento
-             WHERE e.nombres LIKE ? 
+             WHERE (e.nombres LIKE ? 
                 OR e.apellidos LIKE ? 
-                OR e.numero_identificacion LIKE ?
+                OR e.numero_identificacion LIKE ?)
+               ${isEmployeeRole ? 'AND e.id_empleado = ?' : ''}
              ORDER BY e.apellidos, e.nombres
              LIMIT 20`,
-            [searchTerm, searchTerm, searchTerm]
+            isEmployeeRole
+              ? [searchTerm, searchTerm, searchTerm, req.user.id_empleado]
+              : [searchTerm, searchTerm, searchTerm]
         );
 
         res.json({

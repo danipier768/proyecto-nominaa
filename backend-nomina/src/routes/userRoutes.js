@@ -148,15 +148,15 @@ const {
 // Importar middlewares
 const {
     verifyToken,
-    verifyAdminORRRHH
+    verifyAdmin
 } = require('../middleware/authMiddleware');
 
 // ============================================
-// TODAS LAS RUTAS REQUIEREN AUTENTICACIÓN Y ROL ADMIN/RRHH
+// TODAS LAS RUTAS REQUIEREN AUTENTICACIÓN Y ROL ADMIN
 // ============================================
 
 router.use(verifyToken);
-router.use(verifyAdminORRRHH);
+router.use(verifyAdmin);
 
 // ============================================
 // RUTAS

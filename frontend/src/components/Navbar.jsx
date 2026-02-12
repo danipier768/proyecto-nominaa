@@ -10,7 +10,7 @@ import logo from '../assets/dsv.png';
 
 
 const Navbar = () => {
-    const { user, logout, isAdminOrRRHH } = useAuth();
+    const { user, logout, isAdmin } = useAuth();
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -37,7 +37,7 @@ const Navbar = () => {
                     <Link to="/employees" className="nav-link">
                         <i className="fa-solid fa-users"></i> Empleados
                     </Link>
-                    {isAdminOrRRHH() && (
+                    {isAdmin() && (
                         <Link to="/users" className="nav-link">
                             <i className="fa-solid fa-user-shield"></i> Usuarios
                         </Link>

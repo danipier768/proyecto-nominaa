@@ -81,7 +81,7 @@ const verifyToken = async (req, res, next) => {
 
     //Verificar  que el usuario existe y esta activo
     const [users] = await pool.query(
-      `SELECT u.id_usuario, u.username, u.email, u.activo, r.nombre_rol
+      `SELECT u.id_usuario, u.username, u.email, u.activo, u.id_empleado, r.nombre_rol
             FROM usuarios u
             INNER JOIN roles r ON u.id_rol = r.id_rol
             WHERE u.id_usuario = ?`,
@@ -110,7 +110,8 @@ const verifyToken = async (req, res, next) => {
         id_usuario: user.id_usuario,
         username : user.username,
         email: user.email,
-        rol: user.nombre_rol
+        rol: user.nombre_rol,
+        id_empleado: user.id_empleado
     };
     //Continuar con la siguiente funcion 
     next()
