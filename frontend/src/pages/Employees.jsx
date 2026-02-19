@@ -14,7 +14,6 @@ const Employees = () => {
 
     // Estados
     const [employees, setEmployees] = useState([]);
-    const [cargos, setCargos] = useState([]);
     const [departamentos, setDepartamentos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -31,7 +30,7 @@ const Employees = () => {
         sueldo: '',
         fecha_nacimiento: '',
         fecha_ingreso: '',
-        id_cargo: '',
+        nombre_cargo: '',
         id_departamento: ''
     });
 
@@ -40,7 +39,7 @@ const Employees = () => {
     // ========================================
     useEffect(() => {
         fetchEmployees();
-        fetchCatalogs();
+        fetchDepartments();
     }, []);
 
     const fetchEmployees = async () => {
@@ -58,19 +57,14 @@ const Employees = () => {
     };
 
     // ========================================
-    // CARGAR CATÁLOGOS (CARGOS Y DEPARTAMENTOS) 👈 NUEVO
+    // CARGAR CATÁLOGOS (SOLO DEPARTAMENTOS)
     // ========================================
-    const fetchCatalogs = async () => {
+    const fetchDepartments = async () => {
         try {
-            const [cargosRes, deptosRes] = await Promise.all([
-                api.get('/catalogs/cargos'),
-                api.get('/catalogs/departamentos')
-            ]);
-
-            setCargos(cargosRes.data.data || []);
+            const deptosRes = await api.get('/catalogs/departamentos');
             setDepartamentos(deptosRes.data.data || []);
         } catch (err) {
-            console.error('Error al cargar catálogos:', err);
+            console.error('Error al cargar departamentos:', err);
         }
     };
 
@@ -109,7 +103,7 @@ const Employees = () => {
                 sueldo: employee.sueldo || '',
                 fecha_nacimiento: employee.fecha_nacimiento?.split('T')[0] || '',
                 fecha_ingreso: employee.fecha_ingreso?.split('T')[0] || '',
-                id_cargo: employee.id_cargo || '',
+                nombre_cargo: employee.nombre_cargo || '',
                 id_departamento: employee.id_departamento || ''
             });
         } else {
@@ -122,7 +116,7 @@ const Employees = () => {
                 sueldo: '',
                 fecha_nacimiento: '',
                 fecha_ingreso: '',
-                id_cargo: '',
+                nombre_cargo: '',
                 id_departamento: ''
             });
         }
@@ -143,7 +137,7 @@ const Employees = () => {
             sueldo: '',
             fecha_nacimiento: '',
             fecha_ingreso: '',
-            id_cargo: '',
+            nombre_cargo: '',
             id_departamento: ''
         });
     };
@@ -413,23 +407,19 @@ const Employees = () => {
                                     </div>
                                 </div>
 
-                                {/* 👇 NUEVOS SELECTS DE CARGO Y DEPARTAMENTO */}
+                                {/* 👇 CARGO MANUAL Y DEPARTAMENTO */}
                                 <div className="form-row">
                                     <div className="form-group">
                                         <label>Cargo *</label>
-                                        <select
-                                            name="id_cargo"
-                                            value={formData.id_cargo}
+                                        <input
+                                            type="text"
+                                            name="nombre_cargo"
+                                            value={formData.nombre_cargo}
                                             onChange={handleChange}
                                             required
-                                        >
-                                            <option value="">Selecciona un cargo</option>
-                                            {cargos.map((cargo) => (
-                                                <option key={cargo.id_cargo} value={cargo.id_cargo}>
-                                                    {cargo.nombre_cargo}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            maxLength={100}
+                                            placeholder="Escribe el cargo"
+                                        />
                                     </div>
                                     <div className="form-group">
                                         <label>Departamento *</label>

@@ -90,6 +90,28 @@ VALIDACIONES DE SEGURIDAD:
 
 const { pool } = require("../config/database.js");
 
+const resolveCargoIdByName = async (nombreCargo) => {
+  const cargoLimpio = nombreCargo?.trim();
+
+  if (!cargoLimpio) return null;
+
+  const [existingCargo] = await pool.query(
+    `SELECT id_cargo FROM cargos WHERE UPPER(nombre_cargo) = UPPER(?) LIMIT 1`,
+    [cargoLimpio]
+  );
+
+  if (existingCargo.length > 0) {
+    return existingCargo[0].id_cargo;
+  }
+
+  const [result] = await pool.query(
+    `INSERT INTO cargos (nombre_cargo) VALUES (?)`,
+    [cargoLimpio]
+  );
+
+  return result.insertId;
+};
+
 //1. Listar todos los empleados
 
 const getAllEmployees = async (req, res) => {
@@ -232,7 +254,7 @@ const createEmployee = async (req, res) => {
       sueldo,
       fecha_nacimiento,
       fecha_ingreso,
-      id_cargo,
+      nombre_cargo,
       id_departamento,
     } = req.body;
 
@@ -244,7 +266,8 @@ const createEmployee = async (req, res) => {
       !numero_identificacion ||
       sueldo === undefined ||
       sueldo === null ||
-      sueldo === ''
+      sueldo === '' ||
+      !nombre_cargo?.trim()
     ) {
       return res.status(400).json({
         success: false,
@@ -265,6 +288,8 @@ const createEmployee = async (req, res) => {
       });
     }
 
+    const resolvedCargoId = await resolveCargoIdByName(nombre_cargo);
+
     // Insertar un nuevo empleado
     const [result] = await pool.query(
       `INSERT INTO empleados 
@@ -279,7 +304,7 @@ const createEmployee = async (req, res) => {
         sueldo,
         fecha_nacimiento || null,
         fecha_ingreso || new Date(),
-        id_cargo,
+        resolvedCargoId,
         id_departamento,
       ]
     );
@@ -324,7 +349,7 @@ const updateEmployee = async (req, res) => {
       sueldo,
       fecha_nacimiento,
       fecha_ingreso,
-      id_cargo,
+      nombre_cargo,
       id_departamento,
     } = req.body;
     // Verificar que el empleado existe
@@ -354,6 +379,10 @@ const updateEmployee = async (req, res) => {
       }
     }
 
+    const resolvedCargoId = nombre_cargo !== undefined
+      ? await resolveCargoIdByName(nombre_cargo)
+      : undefined;
+
     // Actualizar el empleado
     await pool.query(
       `UPDATE empleados 
@@ -375,7 +404,7 @@ const updateEmployee = async (req, res) => {
         sueldo,
         fecha_nacimiento,
         fecha_ingreso,
-        id_cargo,
+        resolvedCargoId,
         id_departamento,
         id,
       ]
