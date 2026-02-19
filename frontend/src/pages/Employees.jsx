@@ -28,6 +28,7 @@ const Employees = () => {
         apellidos: '',
         tipo_identificacion: 'CC',
         numero_identificacion: '',
+        sueldo: '',
         fecha_nacimiento: '',
         fecha_ingreso: '',
         id_cargo: '',
@@ -105,6 +106,7 @@ const Employees = () => {
                 apellidos: employee.apellidos || '',
                 tipo_identificacion: employee.tipo_identificacion || 'CC',
                 numero_identificacion: employee.numero_identificacion || '',
+                sueldo: employee.sueldo || '',
                 fecha_nacimiento: employee.fecha_nacimiento?.split('T')[0] || '',
                 fecha_ingreso: employee.fecha_ingreso?.split('T')[0] || '',
                 id_cargo: employee.id_cargo || '',
@@ -117,6 +119,7 @@ const Employees = () => {
                 apellidos: '',
                 tipo_identificacion: 'CC',
                 numero_identificacion: '',
+                sueldo: '',
                 fecha_nacimiento: '',
                 fecha_ingreso: '',
                 id_cargo: '',
@@ -137,6 +140,7 @@ const Employees = () => {
             apellidos: '',
             tipo_identificacion: 'CC',
             numero_identificacion: '',
+            sueldo: '',
             fecha_nacimiento: '',
             fecha_ingreso: '',
             id_cargo: '',
@@ -259,6 +263,7 @@ const Employees = () => {
                                     <th>ID</th>
                                     <th>Nombre Completo</th>
                                     <th>Identificación</th>
+                                    <th>Sueldo</th>
                                     <th>Cargo</th>
                                     <th>Departamento</th>
                                     {isAdminOrRRHH() && <th>Acciones</th>}
@@ -267,7 +272,7 @@ const Employees = () => {
                             <tbody>
                                 {employees.length === 0 ? (
                                     <tr>
-                                        <td colSpan={isAdminOrRRHH() ? 6 : 5} style={{ textAlign: 'center' }}>
+                                        <td colSpan={isAdminOrRRHH() ? 7 : 6} style={{ textAlign: 'center' }}>
                                             No hay empleados registrados
                                         </td>
                                     </tr>
@@ -277,6 +282,7 @@ const Employees = () => {
                                             <td>{employee.id_empleado}</td>
                                             <td>{employee.nombres} {employee.apellidos}</td>
                                             <td>{employee.tipo_identificacion} {employee.numero_identificacion}</td>
+                                            <td>${Number(employee.sueldo || 0).toLocaleString('es-CO')}</td>
                                             <td>{employee.nombre_cargo || 'Sin cargo'}</td>
                                             <td>{employee.nombre_departamento || 'Sin departamento'}</td>
                                             {isAdminOrRRHH() && (
@@ -388,6 +394,21 @@ const Employees = () => {
                                             value={formData.fecha_ingreso}
                                             onChange={handleChange}
                                             max={getTodayDate()}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>Sueldo *</label>
+                                        <input
+                                            type="number"
+                                            name="sueldo"
+                                            value={formData.sueldo}
+                                            onChange={handleChange}
+                                            min="0"
+                                            step="0.01"
+                                            required
                                         />
                                     </div>
                                 </div>

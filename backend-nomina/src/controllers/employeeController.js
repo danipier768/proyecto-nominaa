@@ -124,6 +124,7 @@ const getAllEmployees = async (req, res) => {
                 e.apellidos,
                 e.tipo_identificacion,
                 e.numero_identificacion,
+                e.sueldo,
                 e.fecha_nacimiento,
                 e.fecha_ingreso,
                 c.nombre_cargo,
@@ -228,6 +229,7 @@ const createEmployee = async (req, res) => {
       apellidos,
       tipo_identificacion,
       numero_identificacion,
+      sueldo,
       fecha_nacimiento,
       fecha_ingreso,
       id_cargo,
@@ -239,7 +241,10 @@ const createEmployee = async (req, res) => {
       !nombres ||
       !apellidos ||
       !tipo_identificacion ||
-      !numero_identificacion
+      !numero_identificacion ||
+      sueldo === undefined ||
+      sueldo === null ||
+      sueldo === ''
     ) {
       return res.status(400).json({
         success: false,
@@ -263,14 +268,15 @@ const createEmployee = async (req, res) => {
     // Insertar un nuevo empleado
     const [result] = await pool.query(
       `INSERT INTO empleados 
-        (nombres, apellidos, tipo_identificacion, numero_identificacion,
+        (nombres, apellidos, tipo_identificacion, numero_identificacion, sueldo,
          fecha_nacimiento, fecha_ingreso, id_cargo, id_departamento) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         nombres,
         apellidos,
         tipo_identificacion,
         numero_identificacion,
+        sueldo,
         fecha_nacimiento || null,
         fecha_ingreso || new Date(),
         id_cargo,
@@ -315,6 +321,7 @@ const updateEmployee = async (req, res) => {
       apellidos,
       tipo_identificacion,
       numero_identificacion,
+      sueldo,
       fecha_nacimiento,
       fecha_ingreso,
       id_cargo,
@@ -354,6 +361,7 @@ const updateEmployee = async (req, res) => {
                  apellidos = COALESCE(?, apellidos),
                  tipo_identificacion = COALESCE(?, tipo_identificacion),
                  numero_identificacion = COALESCE(?, numero_identificacion),
+                 sueldo = COALESCE(?, sueldo),
                  fecha_nacimiento = COALESCE(?, fecha_nacimiento),
                  fecha_ingreso = COALESCE(?, fecha_ingreso),
                  id_cargo = COALESCE(?, id_cargo),
@@ -364,6 +372,7 @@ const updateEmployee = async (req, res) => {
         apellidos,
         tipo_identificacion,
         numero_identificacion,
+        sueldo,
         fecha_nacimiento,
         fecha_ingreso,
         id_cargo,
@@ -486,6 +495,7 @@ const searchEmployees = async (req, res) => {
                 e.nombres,
                 e.apellidos,
                 e.numero_identificacion,
+                e.sueldo,
                 c.nombre_cargo,
                 d.nombre_departamento
              FROM empleados e

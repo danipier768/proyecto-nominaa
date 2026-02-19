@@ -92,6 +92,7 @@ CREATE TABLE `empleados` (
   `apellidos` varchar(100) NOT NULL,
   `tipo_identificacion` enum('CC','TI','CE','PASAPORTE') NOT NULL,
   `numero_identificacion` varchar(50) NOT NULL,
+  `sueldo` decimal(12,2) NOT NULL DEFAULT 0.00,
   `fecha_nacimiento` date NOT NULL,
   `fecha_ingreso` date NOT NULL,
   `id_cargo` int(11) NOT NULL,
@@ -102,10 +103,10 @@ CREATE TABLE `empleados` (
 -- Volcado de datos para la tabla `empleados`
 --
 
-INSERT INTO `empleados` (`id_empleado`, `nombres`, `apellidos`, `tipo_identificacion`, `numero_identificacion`, `fecha_nacimiento`, `fecha_ingreso`, `id_cargo`, `id_departamento`) VALUES
-(5, 'xiomara', 'arverja', 'CC', '12345678', '2025-11-12', '2025-11-12', 1, 1),
-(6, 'Daniel', 'Perez Rojas', 'CC', '1090273907', '2006-08-10', '2024-11-18', 2, 3),
-(7, 'Daniel', 'Pereezz ROjas', 'CC', '1023205511', '2004-06-10', '2024-01-02', 2, 3);
+INSERT INTO `empleados` (`id_empleado`, `nombres`, `apellidos`, `tipo_identificacion`, `numero_identificacion`, `sueldo`, `fecha_nacimiento`, `fecha_ingreso`, `id_cargo`, `id_departamento`) VALUES
+(5, 'xiomara', 'arverja', 'CC', '12345678', 1600000.00, '2025-11-12', '2025-11-12', 1, 1),
+(6, 'Daniel', 'Perez Rojas', 'CC', '1090273907', 2100000.00, '2006-08-10', '2024-11-18', 2, 3),
+(7, 'Daniel', 'Pereezz ROjas', 'CC', '1023205511', 1950000.00, '2004-06-10', '2024-01-02', 2, 3);
 
 -- --------------------------------------------------------
 
