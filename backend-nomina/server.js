@@ -46,7 +46,7 @@ const express = require('express');
 const cors = require('cors');
 
 //importar la confiuracion de base dedatos
-const { testConnection, ensureEmployeeSalaryColumn } = require('./src/config/database.js');
+const { testConnection, ensureEmployeeSalaryColumn, ensureDefaultDepartments } = require('./src/config/database.js');
 const { verifyConnection } = require('./src/services/emailService');
 
 
@@ -160,6 +160,7 @@ const startServer = async () => {
     if (dbConnected) {
       console.log("🛠️  Verificando migraciones mínimas de base de datos...");
       await ensureEmployeeSalaryColumn();
+      await ensureDefaultDepartments();
     }
 
     app.listen(PORT, () => {

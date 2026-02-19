@@ -61,11 +61,46 @@ CREATE TABLE `departamentos` (
 --
 
 INSERT INTO `departamentos` (`id_departamento`, `nombre_departamento`) VALUES
-(1, 'Recursos Humanos'),
-(2, 'Contabilidad'),
-(3, 'Desarrollo'),
-(4, 'Soporte'),
-(5, 'Ventas');
+(1, 'Gerencia General'),
+(2, 'Administración'),
+(3, 'Recursos Humanos (Gestión Humana)'),
+(4, 'Finanzas'),
+(5, 'Contabilidad'),
+(6, 'Tesorería'),
+(7, 'Compras'),
+(8, 'Ventas'),
+(9, 'Comercial'),
+(10, 'Mercadeo (Marketing)'),
+(11, 'Servicio al Cliente'),
+(12, 'Operaciones'),
+(13, 'Producción'),
+(14, 'Logística'),
+(15, 'Almacén / Bodega'),
+(16, 'Tecnología de la Información (TI / Sistemas)'),
+(17, 'Desarrollo de Software'),
+(18, 'Infraestructura Tecnológica'),
+(19, 'Seguridad de la Información'),
+(20, 'Calidad'),
+(21, 'Auditoría Interna'),
+(22, 'Jurídica / Legal'),
+(23, 'Planeación / Estrategia'),
+(24, 'Investigación y Desarrollo (I+D)'),
+(25, 'Mantenimiento'),
+(26, 'Seguridad Física'),
+(27, 'SST (Seguridad y Salud en el Trabajo)'),
+(28, 'Proyectos (PMO)'),
+(29, 'Ingeniería'),
+(30, 'Diseño'),
+(31, 'Operaciones de Campo'),
+(32, 'Call Center'),
+(33, 'Soporte Técnico'),
+(34, 'Relaciones Públicas'),
+(35, 'Comercio Exterior'),
+(36, 'Abastecimiento'),
+(37, 'Gestión Documental'),
+(38, 'Capacitación'),
+(39, 'Innovación'),
+(40, 'Experiencia de Usuario (UX/UI)');
 
 -- --------------------------------------------------------
 
@@ -277,7 +312,7 @@ ALTER TABLE `cargos`
 -- AUTO_INCREMENT de la tabla `departamentos`
 --
 ALTER TABLE `departamentos`
-  MODIFY `id_departamento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_departamento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_nomina`
