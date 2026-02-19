@@ -8,6 +8,9 @@
     margin: 0 auto;
     padding: 30px 20px;
 }
+.fa-money-bill:before {
+    color: #1f2937;
+}
 
 /* Header del dashboard */
 .dashboard-header {

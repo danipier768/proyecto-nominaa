@@ -59,13 +59,16 @@ const Dashboard = () => {
                         </Link>
                     )}
 
-                    {/* Card de Nómina (próximamente) */}
-                    <div className="dashboard-card disabled">
+                    {/* Card de Nómina*/}
+                    <Link to="/nomina">
+                    <div className="dashboard-card">
                         <div className="card-icon"><i className="fa-solid fa-money-bill"></i></div>
                         <h3>Nómina</h3>
                         <p>Gestión de nómina y pagos</p>
-                        <span className="card-action">Próximamente...</span>
+                        <span className="card-action">Gestionar Nomina →</span>
                     </div>
+                    </Link>
+                    
 
                     {/* Card de Reportes (próximamente) */}
                     <div className="dashboard-card disabled">

@@ -13,6 +13,9 @@ import Dashboard from './pages/Dashboard';
 import Employees from './pages/Employees';
 import Users from './pages/Users';
 import ForgotPassword from './pages/ForgotPassword';
+import { Nomina } from './pages/Nomina';
+import { Directory } from './pages/Directory';
+
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -51,6 +54,24 @@ function App() {
         element={
           <PrivateRoute>
             <Dashboard />
+          </PrivateRoute>
+        }
+      />
+      {/* Vista principal nomina y gestion de la misma de empleados */}
+       <Route
+        path="/nomina"
+        element={
+          <PrivateRoute>
+            <Nomina />
+          </PrivateRoute>
+        }
+      />
+        {/* Vista directorio de empleados*/}
+       <Route
+        path="/directory"
+        element={
+          <PrivateRoute>
+            <Directory />
           </PrivateRoute>
         }
       />
