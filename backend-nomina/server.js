@@ -46,7 +46,7 @@ const express = require('express');
 const cors = require('cors');
 
 //importar la confiuracion de base dedatos
-const { testConnection } = require('./src/config/database.js');
+const { testConnection, ensureEmployeeSalaryColumn, ensureDefaultDepartments } = require('./src/config/database.js');
 const { verifyConnection } = require('./src/services/emailService');
 
 
@@ -156,6 +156,12 @@ const startServer = async () => {
     if (!dbConnected)
     console.error("⚠️  Advertencia: No se pudo conectar a la base de datos");
     console.log("📝 Verifica tu archivo .env y que MySQL esté corriendo");
+
+    if (dbConnected) {
+      console.log("🛠️  Verificando migraciones mínimas de base de datos...");
+      await ensureEmployeeSalaryColumn();
+      await ensureDefaultDepartments();
+    }
 
     app.listen(PORT, () => {
       console.log("\n" + "=".repeat(50));

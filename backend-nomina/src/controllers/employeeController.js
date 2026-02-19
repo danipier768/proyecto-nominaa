@@ -90,6 +90,28 @@ VALIDACIONES DE SEGURIDAD:
 
 const { pool } = require("../config/database.js");
 
+const resolveCargoIdByName = async (nombreCargo) => {
+  const cargoLimpio = nombreCargo?.trim();
+
+  if (!cargoLimpio) return null;
+
+  const [existingCargo] = await pool.query(
+    `SELECT id_cargo FROM cargos WHERE UPPER(nombre_cargo) = UPPER(?) LIMIT 1`,
+    [cargoLimpio]
+  );
+
+  if (existingCargo.length > 0) {
+    return existingCargo[0].id_cargo;
+  }
+
+  const [result] = await pool.query(
+    `INSERT INTO cargos (nombre_cargo) VALUES (?)`,
+    [cargoLimpio]
+  );
+
+  return result.insertId;
+};
+
 //1. Listar todos los empleados
 
 const getAllEmployees = async (req, res) => {
@@ -124,6 +146,7 @@ const getAllEmployees = async (req, res) => {
                 e.apellidos,
                 e.tipo_identificacion,
                 e.numero_identificacion,
+                e.sueldo,
                 e.fecha_nacimiento,
                 e.fecha_ingreso,
                 c.nombre_cargo,
@@ -228,9 +251,10 @@ const createEmployee = async (req, res) => {
       apellidos,
       tipo_identificacion,
       numero_identificacion,
+      sueldo,
       fecha_nacimiento,
       fecha_ingreso,
-      id_cargo,
+      nombre_cargo,
       id_departamento,
     } = req.body;
 
@@ -239,7 +263,11 @@ const createEmployee = async (req, res) => {
       !nombres ||
       !apellidos ||
       !tipo_identificacion ||
-      !numero_identificacion
+      !numero_identificacion ||
+      sueldo === undefined ||
+      sueldo === null ||
+      sueldo === '' ||
+      !nombre_cargo?.trim()
     ) {
       return res.status(400).json({
         success: false,
@@ -260,20 +288,23 @@ const createEmployee = async (req, res) => {
       });
     }
 
+    const resolvedCargoId = await resolveCargoIdByName(nombre_cargo);
+
     // Insertar un nuevo empleado
     const [result] = await pool.query(
       `INSERT INTO empleados 
-        (nombres, apellidos, tipo_identificacion, numero_identificacion,
+        (nombres, apellidos, tipo_identificacion, numero_identificacion, sueldo,
          fecha_nacimiento, fecha_ingreso, id_cargo, id_departamento) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         nombres,
         apellidos,
         tipo_identificacion,
         numero_identificacion,
+        sueldo,
         fecha_nacimiento || null,
         fecha_ingreso || new Date(),
-        id_cargo,
+        resolvedCargoId,
         id_departamento,
       ]
     );
@@ -315,9 +346,10 @@ const updateEmployee = async (req, res) => {
       apellidos,
       tipo_identificacion,
       numero_identificacion,
+      sueldo,
       fecha_nacimiento,
       fecha_ingreso,
-      id_cargo,
+      nombre_cargo,
       id_departamento,
     } = req.body;
     // Verificar que el empleado existe
@@ -347,6 +379,10 @@ const updateEmployee = async (req, res) => {
       }
     }
 
+    const resolvedCargoId = nombre_cargo !== undefined
+      ? await resolveCargoIdByName(nombre_cargo)
+      : undefined;
+
     // Actualizar el empleado
     await pool.query(
       `UPDATE empleados 
@@ -354,6 +390,7 @@ const updateEmployee = async (req, res) => {
                  apellidos = COALESCE(?, apellidos),
                  tipo_identificacion = COALESCE(?, tipo_identificacion),
                  numero_identificacion = COALESCE(?, numero_identificacion),
+                 sueldo = COALESCE(?, sueldo),
                  fecha_nacimiento = COALESCE(?, fecha_nacimiento),
                  fecha_ingreso = COALESCE(?, fecha_ingreso),
                  id_cargo = COALESCE(?, id_cargo),
@@ -364,9 +401,10 @@ const updateEmployee = async (req, res) => {
         apellidos,
         tipo_identificacion,
         numero_identificacion,
+        sueldo,
         fecha_nacimiento,
         fecha_ingreso,
-        id_cargo,
+        resolvedCargoId,
         id_departamento,
         id,
       ]
@@ -486,6 +524,7 @@ const searchEmployees = async (req, res) => {
                 e.nombres,
                 e.apellidos,
                 e.numero_identificacion,
+                e.sueldo,
                 c.nombre_cargo,
                 d.nombre_departamento
              FROM empleados e
