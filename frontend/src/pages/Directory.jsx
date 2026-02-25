@@ -16,6 +16,41 @@ const formatPesoColombiano = (value) => {
 }
 
 const ROWS_PER_PAGE = 10
+const SUBSIDIO_TRANSPORTE = 249095
+const DIAS_NOMINA_MENSUAL = 30
+const HORAS_MENSUALES_REFERENCIA = 240
+
+const OVERTIME_TYPES = [
+  { key: 'extra_diurna', label: 'Extra diurna', surcharge: 0.25 },
+  { key: 'extra_nocturna', label: 'Extra nocturna', surcharge: 0.75 },
+  { key: 'extra_diurna_dominical', label: 'Extra diurna en domingo/festivo', surcharge: 1.05 },
+  { key: 'extra_nocturna_dominical', label: 'Extra nocturna en domingo/festivo', surcharge: 1.55 }
+]
+
+const getDefaultPayrollPeriod = () => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = now.getMonth()
+
+  const firstDay = new Date(year, month, 1)
+  const lastDay = new Date(year, month + 1, 0)
+
+  return {
+    startDate: firstDay.toISOString().split('T')[0],
+    endDate: lastDay.toISOString().split('T')[0]
+  }
+}
+
+const calculateWorkedDays = (startDate, endDate) => {
+  if (!startDate || !endDate) return 0
+
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) return 0
+
+  const diffMs = end.getTime() - start.getTime()
+  return Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1
+}
 
 export const Directory = () => {
   const [employees, setEmployees] = useState([])
@@ -25,6 +60,14 @@ export const Directory = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [selectedEmployee, setSelectedEmployee] = useState(null)
+  const [payrollDates, setPayrollDates] = useState(getDefaultPayrollPeriod())
+  const [overtimeRows, setOvertimeRows] = useState([
+    {
+      id: 1,
+      typeKey: OVERTIME_TYPES[0].key,
+      hours: 0
+    }
+  ])
 
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -93,7 +136,10 @@ export const Directory = () => {
   }, [safePage, totalPages])
 
   const openEmployeeModal = (emp) => {
+    const defaultPeriod = getDefaultPayrollPeriod()
     setSelectedEmployee(emp)
+    setPayrollDates(defaultPeriod)
+    setOvertimeRows([{ id: Date.now(), typeKey: OVERTIME_TYPES[0].key, hours: 0 }])
     setShowModal(true)
   }
 
@@ -101,6 +147,79 @@ export const Directory = () => {
     setSelectedEmployee(null)
     setShowModal(false)
   }
+
+  const updatePayrollDate = (field, value) => {
+    setPayrollDates((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const addOvertimeRow = () => {
+    setOvertimeRows((prev) => ([
+      ...prev,
+      {
+        id: Date.now() + Math.random(),
+        typeKey: OVERTIME_TYPES[0].key,
+        hours: 0
+      }
+    ]))
+  }
+
+  const removeOvertimeRow = (rowId) => {
+    setOvertimeRows((prev) => (prev.length === 1 ? prev : prev.filter((row) => row.id !== rowId)))
+  }
+
+  const updateOvertimeRow = (rowId, field, value) => {
+    setOvertimeRows((prev) => prev.map((row) => (
+      row.id === rowId
+        ? {
+            ...row,
+            [field]: field === 'hours' ? Math.max(0, Number(value) || 0) : value
+          }
+        : row
+    )))
+  }
+
+  const payrollSummary = useMemo(() => {
+    const salarioBase = Number(selectedEmployee?.sueldo) || 0
+    const diasTrabajados = calculateWorkedDays(payrollDates.startDate, payrollDates.endDate)
+    const valorDia = salarioBase / DIAS_NOMINA_MENSUAL
+    const valorHoraOrdinaria = salarioBase / HORAS_MENSUALES_REFERENCIA
+
+    const detallesHorasExtra = overtimeRows.map((row) => {
+      const overtimeType = OVERTIME_TYPES.find((item) => item.key === row.typeKey) || OVERTIME_TYPES[0]
+      const valorHoraExtra = valorHoraOrdinaria * (1 + overtimeType.surcharge)
+      const totalFila = (Number(row.hours) || 0) * valorHoraExtra
+
+      return {
+        ...row,
+        overtimeType,
+        valorHoraExtra,
+        totalFila
+      }
+    })
+
+    const totalHorasExtra = detallesHorasExtra.reduce((acc, row) => acc + row.totalFila, 0)
+    const pagoBasicoPeriodo = valorDia * diasTrabajados
+    const baseDeducciones = pagoBasicoPeriodo + totalHorasExtra
+    const pension = baseDeducciones * 0.04
+    const salud = baseDeducciones * 0.04
+    const totalDeducciones = pension + salud
+    const subtotalBruto = pagoBasicoPeriodo + totalHorasExtra + SUBSIDIO_TRANSPORTE
+    const neto = subtotalBruto - totalDeducciones
+
+    return {
+      diasTrabajados,
+      pagoBasicoPeriodo,
+      valorHoraOrdinaria,
+      detallesHorasExtra,
+      totalHorasExtra,
+      subsidioTransporte: SUBSIDIO_TRANSPORTE,
+      pension,
+      salud,
+      totalDeducciones,
+      subtotalBruto,
+      neto
+    }
+  }, [selectedEmployee, payrollDates.startDate, payrollDates.endDate, overtimeRows])
 
   return (
     <>
@@ -284,20 +403,28 @@ export const Directory = () => {
                   <div className="form-group">
                     <label>Fecha Inicio</label>
                     <div className="input-with-icon">
-                      <input type="date" defaultValue="2024-03-01" readOnly />
+                      <input
+                        type="date"
+                        value={payrollDates.startDate}
+                        onChange={(e) => updatePayrollDate('startDate', e.target.value)}
+                      />
                       <i className="fa-solid fa-calendar"></i>
                     </div>
                   </div>
                   <div className="form-group">
                     <label>Fecha Fin</label>
                     <div className="input-with-icon">
-                      <input type="date" defaultValue="2024-03-31" readOnly />
+                      <input
+                        type="date"
+                        value={payrollDates.endDate}
+                        onChange={(e) => updatePayrollDate('endDate', e.target.value)}
+                      />
                       <i className="fa-solid fa-calendar"></i>
                     </div>
                   </div>
                   <div className="form-group">
                     <label>Días Trabajados</label>
-                    <input type="number" defaultValue="24" readOnly />
+                    <input type="number" value={payrollSummary.diasTrabajados} readOnly />
                   </div>
                 </div>
               </div>
@@ -305,7 +432,7 @@ export const Directory = () => {
               <div className="payroll-section">
                 <div className="section-header-with-action">
                   <h3 className="section-title">COMPENSACIÓN POR HORAS EXTRA</h3>
-                  <button type="button" className="btn-add-entry">+ Agregar Entrada</button>
+                  <button type="button" className="btn-add-entry" onClick={addOvertimeRow}>+ Agregar Entrada</button>
                 </div>
                 <div className="overtime-table">
                   <div className="overtime-table-header">
@@ -314,17 +441,39 @@ export const Directory = () => {
                     <div className="overtime-col-rate">Tasa ($/hr)</div>
                     <div className="overtime-col-actions"></div>
                   </div>
-                  <div className="overtime-table-row">
-                    <div className="overtime-col-type">
-                      <select defaultValue="recargo_nocturno" disabled>
-                        <option value="hora_extra_diurna">Hora Extra Diurna (25%)</option>
-                        <option value="recargo_nocturno">Recargo Nocturno (35%)</option>
-                      </select>
+                  {payrollSummary.detallesHorasExtra.map((row) => (
+                    <div className="overtime-table-row" key={row.id}>
+                      <div className="overtime-col-type">
+                        <select
+                          value={row.typeKey}
+                          onChange={(e) => updateOvertimeRow(row.id, 'typeKey', e.target.value)}
+                        >
+                          {OVERTIME_TYPES.map((type) => (
+                            <option value={type.key} key={type.key}>
+                              {type.label} (+{Math.round(type.surcharge * 100)}%)
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="overtime-col-hours">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.5"
+                          value={row.hours}
+                          onChange={(e) => updateOvertimeRow(row.id, 'hours', e.target.value)}
+                        />
+                      </div>
+                      <div className="overtime-col-rate">
+                        <input type="text" value={formatPesoColombiano(row.valorHoraExtra)} readOnly />
+                      </div>
+                      <div className="overtime-col-actions">
+                        <button type="button" className="btn-delete-entry" onClick={() => removeOvertimeRow(row.id)}>
+                          <i className="fa-solid fa-trash"></i>
+                        </button>
+                      </div>
                     </div>
-                    <div className="overtime-col-hours"><input type="number" defaultValue="8" readOnly /></div>
-                    <div className="overtime-col-rate"><input type="number" defaultValue="0.00" step="0.01" readOnly /></div>
-                    <div className="overtime-col-actions"><button type="button" className="btn-delete-entry"><i className="fa-solid fa-trash"></i></button></div>
-                  </div>
+                  ))}
                 </div>
               </div>
 
@@ -333,15 +482,15 @@ export const Directory = () => {
                 <div className="deductions-grid">
                   <div className="deduction-box">
                     <div className="deduction-label">Pensión Porcentaje</div>
-                    <div className="deduction-value">4%</div>
+                    <div className="deduction-value">4% ({formatPesoColombiano(payrollSummary.pension)})</div>
                   </div>
                   <div className="deduction-box">
                     <div className="deduction-label">Porcentaje a Salud</div>
-                    <div className="deduction-value">4%</div>
+                    <div className="deduction-value">4% ({formatPesoColombiano(payrollSummary.salud)})</div>
                   </div>
                   <div className="deduction-box">
                     <div className="deduction-label">Neto Pago</div>
-                    <div className="deduction-value">{formatPesoColombiano((selectedEmployee.sueldo || 0) * 0.92)}</div>
+                    <div className="deduction-value">{formatPesoColombiano(payrollSummary.neto)}</div>
                   </div>
                 </div>
               </div>
@@ -349,16 +498,28 @@ export const Directory = () => {
 
             <div className="payroll-modal-footer">
               <div className="summary-row">
+                <span className="summary-label">Pago Base por Días:</span>
+                <span className="summary-value">{formatPesoColombiano(payrollSummary.pagoBasicoPeriodo)}</span>
+              </div>
+              <div className="summary-row">
+                <span className="summary-label">Total Horas Extra:</span>
+                <span className="summary-value">{formatPesoColombiano(payrollSummary.totalHorasExtra)}</span>
+              </div>
+              <div className="summary-row">
+                <span className="summary-label">Subsidio Transporte:</span>
+                <span className="summary-value">{formatPesoColombiano(payrollSummary.subsidioTransporte)}</span>
+              </div>
+              <div className="summary-row">
                 <span className="summary-label">Subtotal Bruto:</span>
-                <span className="summary-value">{formatPesoColombiano(selectedEmployee.sueldo || 0)}</span>
+                <span className="summary-value">{formatPesoColombiano(payrollSummary.subtotalBruto)}</span>
               </div>
               <div className="summary-row">
                 <span className="summary-label">Total Deducciones:</span>
-                <span className="summary-value summary-deductions">- {formatPesoColombiano((selectedEmployee.sueldo || 0) * 0.08)}</span>
+                <span className="summary-value summary-deductions">- {formatPesoColombiano(payrollSummary.totalDeducciones)}</span>
               </div>
               <div className="summary-row summary-net">
                 <span className="summary-label">Pago Neto:</span>
-                <span className="summary-value summary-net-value">{formatPesoColombiano((selectedEmployee.sueldo || 0) * 0.92)}</span>
+                <span className="summary-value summary-net-value">{formatPesoColombiano(payrollSummary.neto)}</span>
               </div>
             </div>
           </div>
