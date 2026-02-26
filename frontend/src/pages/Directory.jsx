@@ -60,6 +60,8 @@ export const Directory = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [selectedEmployee, setSelectedEmployee] = useState(null)
+  const [savingPayroll, setSavingPayroll] = useState(false)
+  const [modalMessage, setModalMessage] = useState({ type: '', text: '' })
   const [payrollDates, setPayrollDates] = useState(getDefaultPayrollPeriod())
   const [overtimeRows, setOvertimeRows] = useState([
     {
@@ -140,11 +142,13 @@ export const Directory = () => {
     setSelectedEmployee(emp)
     setPayrollDates(defaultPeriod)
     setOvertimeRows([{ id: Date.now(), typeKey: OVERTIME_TYPES[0].key, hours: 0 }])
+    setModalMessage({ type: '', text: '' })
     setShowModal(true)
   }
 
   const closeEmployeeModal = () => {
     setSelectedEmployee(null)
+    setModalMessage({ type: '', text: '' })
     setShowModal(false)
   }
 
@@ -220,6 +224,57 @@ export const Directory = () => {
       neto
     }
   }, [selectedEmployee, payrollDates.startDate, payrollDates.endDate, overtimeRows])
+
+  const savePayroll = async () => {
+    if (!selectedEmployee) return
+
+    if (!payrollDates.startDate || !payrollDates.endDate || payrollSummary.diasTrabajados <= 0) {
+      setModalMessage({ type: 'error', text: 'Debes seleccionar un rango de fechas válido.' })
+      return
+    }
+
+    try {
+      setSavingPayroll(true)
+      setModalMessage({ type: '', text: '' })
+
+      const overtimeDetails = payrollSummary.detallesHorasExtra
+        .filter((row) => Number(row.hours) > 0)
+        .map((row) => ({
+          concepto: `${row.overtimeType.label} (${row.hours}h)`,
+          valor: row.totalFila
+        }))
+
+      const detalles = [
+        { concepto: `Pago base (${payrollSummary.diasTrabajados} días)`, valor: payrollSummary.pagoBasicoPeriodo },
+        ...overtimeDetails,
+        { concepto: 'Subsidio de transporte', valor: payrollSummary.subsidioTransporte },
+        { concepto: 'Salud 4%', valor: payrollSummary.salud },
+        { concepto: 'Pensión 4%', valor: payrollSummary.pension }
+      ]
+
+      await api.post('/nomina', {
+        id_empleado: selectedEmployee.id_empleado,
+        fecha_inicio: payrollDates.startDate,
+        fecha_corte: payrollDates.endDate,
+        tipo_pago: 'MENSUAL',
+        total_devengado: payrollSummary.subtotalBruto,
+        total_deducciones: payrollSummary.totalDeducciones,
+        detalles
+      })
+
+      setModalMessage({ type: 'success', text: 'Nómina guardada exitosamente.' })
+      setTimeout(() => {
+        closeEmployeeModal()
+      }, 700)
+    } catch (error) {
+      setModalMessage({
+        type: 'error',
+        text: error.response?.data?.message || 'No se pudo guardar la nómina.'
+      })
+    } finally {
+      setSavingPayroll(false)
+    }
+  }
 
   return (
     <>
@@ -497,6 +552,11 @@ export const Directory = () => {
             </div>
 
             <div className="payroll-modal-footer">
+              {modalMessage.text && (
+                <div className={`payroll-save-message payroll-save-message--${modalMessage.type || 'info'}`}>
+                  {modalMessage.text}
+                </div>
+              )}
               <div className="summary-row">
                 <span className="summary-label">Pago Base por Días:</span>
                 <span className="summary-value">{formatPesoColombiano(payrollSummary.pagoBasicoPeriodo)}</span>
@@ -520,6 +580,15 @@ export const Directory = () => {
               <div className="summary-row summary-net">
                 <span className="summary-label">Pago Neto:</span>
                 <span className="summary-value summary-net-value">{formatPesoColombiano(payrollSummary.neto)}</span>
+              </div>
+
+              <div className="payroll-footer-actions">
+                <button type="button" className="payroll-btn payroll-btn--secondary" onClick={closeEmployeeModal} disabled={savingPayroll}>
+                  Cancelar
+                </button>
+                <button type="button" className="payroll-btn payroll-btn--primary" onClick={savePayroll} disabled={savingPayroll}>
+                  {savingPayroll ? 'Guardando...' : 'Guardar nómina'}
+                </button>
               </div>
             </div>
           </div>

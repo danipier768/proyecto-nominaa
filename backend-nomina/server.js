@@ -113,12 +113,14 @@ const authRoutes = require('./src/routes/authRoutes.js')
 const employeeRoutes = require('./src/routes/employeeRoutes.js'); 
 const userRoutes = require('./src/routes/userRoutes.js'); // 👈 AGREGAR ESTA LÍNEA
 const catalogRoutes = require('./src/routes/catalogRoutes.js');
+const nominaRoutes = require('./src/routes/nominaRoutes.js');
 
 // Usar las rutas
 app.use('/api/auth', authRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/catalogs', catalogRoutes); 
+app.use('/api/nomina', nominaRoutes);
 
 //manejo de rutas no encotradas
 app.use((req, res) => {
