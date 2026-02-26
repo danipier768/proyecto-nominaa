@@ -21,10 +21,10 @@ const DIAS_NOMINA_MENSUAL = 30
 const HORAS_MENSUALES_REFERENCIA = 240
 
 const OVERTIME_TYPES = [
-  { key: 'extra_diurna', label: 'Extra diurna', surcharge: 0.25 },
-  { key: 'extra_nocturna', label: 'Extra nocturna', surcharge: 0.75 },
-  { key: 'extra_diurna_dominical', label: 'Extra diurna en domingo/festivo', surcharge: 1.05 },
-  { key: 'extra_nocturna_dominical', label: 'Extra nocturna en domingo/festivo', surcharge: 1.55 }
+  { key: 'extra_diurna', label: 'Extra diurna', surcharge: 0.25, dbType: 'EXTRA_DIURNA' },
+  { key: 'extra_nocturna', label: 'Extra nocturna', surcharge: 0.75, dbType: 'EXTRA_NOCTURNA' },
+  { key: 'extra_diurna_dominical', label: 'Extra diurna en domingo/festivo', surcharge: 1.05, dbType: 'EXTRA_DIURNA_DOMINICAL_FESTIVO' },
+  { key: 'extra_nocturna_dominical', label: 'Extra nocturna en domingo/festivo', surcharge: 1.55, dbType: 'EXTRA_NOCTURNA_DOMINICAL_FESTIVO' }
 ]
 
 const getDefaultPayrollPeriod = () => {
@@ -237,12 +237,22 @@ export const Directory = () => {
       setSavingPayroll(true)
       setModalMessage({ type: '', text: '' })
 
-      const overtimeDetails = payrollSummary.detallesHorasExtra
+      const overtimeRowsToSave = payrollSummary.detallesHorasExtra
         .filter((row) => Number(row.hours) > 0)
-        .map((row) => ({
-          concepto: `${row.overtimeType.label} (${row.hours}h)`,
-          valor: row.totalFila
-        }))
+
+      const overtimeDetails = overtimeRowsToSave.map((row) => ({
+        concepto: `${row.overtimeType.label} (${row.hours}h)`,
+        valor: row.totalFila
+      }))
+
+      const horas_extras = overtimeRowsToSave.map((row) => ({
+        tipo_hora: row.overtimeType.dbType,
+        porcentaje_recargo: row.overtimeType.surcharge * 100,
+        horas: Number(row.hours),
+        valor_hora_base: payrollSummary.valorHoraOrdinaria,
+        valor_hora_extra: row.valorHoraExtra,
+        valor_total: row.totalFila
+      }))
 
       const detalles = [
         { concepto: `Pago base (${payrollSummary.diasTrabajados} días)`, valor: payrollSummary.pagoBasicoPeriodo },
@@ -259,7 +269,8 @@ export const Directory = () => {
         tipo_pago: 'MENSUAL',
         total_devengado: payrollSummary.subtotalBruto,
         total_deducciones: payrollSummary.totalDeducciones,
-        detalles
+        detalles,
+        horas_extras
       })
 
       setModalMessage({ type: 'success', text: 'Nómina guardada exitosamente.' })

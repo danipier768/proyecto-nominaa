@@ -110,6 +110,57 @@ const ensureEmployeeSalaryColumn = async () => {
 };
 
 
+
+const ensurePayrollSupportTables = async () => {
+    try {
+        await promisePool.query(`
+            CREATE TABLE IF NOT EXISTS horas_extra_nomina (
+                id_hora_extra INT(11) NOT NULL AUTO_INCREMENT,
+                id_nomina INT(11) NOT NULL,
+                tipo_hora ENUM(
+                    'EXTRA_DIURNA',
+                    'EXTRA_NOCTURNA',
+                    'EXTRA_DIURNA_DOMINICAL_FESTIVO',
+                    'EXTRA_NOCTURNA_DOMINICAL_FESTIVO'
+                ) NOT NULL,
+                porcentaje_recargo DECIMAL(5,2) NOT NULL,
+                horas DECIMAL(8,2) NOT NULL,
+                valor_hora_base DECIMAL(12,2) NOT NULL,
+                valor_hora_extra DECIMAL(12,2) NOT NULL,
+                valor_total DECIMAL(12,2) NOT NULL,
+                creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (id_hora_extra),
+                KEY idx_horas_extra_nomina_nomina (id_nomina),
+                CONSTRAINT fk_horas_extra_nomina_nomina
+                    FOREIGN KEY (id_nomina) REFERENCES nomina(id_nomina)
+                    ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+        `);
+
+        await promisePool.query(`
+            CREATE TABLE IF NOT EXISTS reporte_nomina_mensual (
+                id_reporte INT(11) NOT NULL AUTO_INCREMENT,
+                anio SMALLINT NOT NULL,
+                mes TINYINT NOT NULL,
+                total_nominas INT(11) NOT NULL DEFAULT 0,
+                total_devengado DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+                total_deducciones DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+                total_pagado DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+                total_horas_extra DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+                valor_horas_extra DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+                actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (id_reporte),
+                UNIQUE KEY uk_reporte_nomina_periodo (anio, mes)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+        `);
+
+        console.log('✅ Tablas de soporte de nómina (horas extra y reportes) verificadas');
+    } catch (error) {
+        console.error('❌ Error asegurando tablas de soporte de nómina:', error.message);
+        throw error;
+    }
+};
+
 const testConnection = async () =>{
     try{
         const[rows] = await promisePool.query('SELECT 1 + 1 AS resultado')
@@ -126,5 +177,6 @@ module.exports = {
     pool: promisePool,
     testConnection,
     ensureEmployeeSalaryColumn,
-    ensureDefaultDepartments
+    ensureDefaultDepartments,
+    ensurePayrollSupportTables
 } 

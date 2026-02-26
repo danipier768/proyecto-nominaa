@@ -160,6 +160,49 @@ CREATE TABLE `nomina` (
   `total_pagar` decimal(12,2) GENERATED ALWAYS AS (`total_devengado` - `total_deducciones`) STORED
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `horas_extra_nomina`
+--
+
+CREATE TABLE `horas_extra_nomina` (
+  `id_hora_extra` int(11) NOT NULL AUTO_INCREMENT,
+  `id_nomina` int(11) NOT NULL,
+  `tipo_hora` enum('EXTRA_DIURNA','EXTRA_NOCTURNA','EXTRA_DIURNA_DOMINICAL_FESTIVO','EXTRA_NOCTURNA_DOMINICAL_FESTIVO') NOT NULL,
+  `porcentaje_recargo` decimal(5,2) NOT NULL,
+  `horas` decimal(8,2) NOT NULL,
+  `valor_hora_base` decimal(12,2) NOT NULL,
+  `valor_hora_extra` decimal(12,2) NOT NULL,
+  `valor_total` decimal(12,2) NOT NULL,
+  `creado_en` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_hora_extra`),
+  KEY `idx_horas_extra_nomina_nomina` (`id_nomina`),
+  CONSTRAINT `fk_horas_extra_nomina_nomina` FOREIGN KEY (`id_nomina`) REFERENCES `nomina` (`id_nomina`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `reporte_nomina_mensual`
+--
+
+CREATE TABLE `reporte_nomina_mensual` (
+  `id_reporte` int(11) NOT NULL AUTO_INCREMENT,
+  `anio` smallint(6) NOT NULL,
+  `mes` tinyint(4) NOT NULL,
+  `total_nominas` int(11) NOT NULL DEFAULT 0,
+  `total_devengado` decimal(14,2) NOT NULL DEFAULT 0.00,
+  `total_deducciones` decimal(14,2) NOT NULL DEFAULT 0.00,
+  `total_pagado` decimal(14,2) NOT NULL DEFAULT 0.00,
+  `total_horas_extra` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `valor_horas_extra` decimal(14,2) NOT NULL DEFAULT 0.00,
+  `actualizado_en` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id_reporte`),
+  UNIQUE KEY `uk_reporte_nomina_periodo` (`anio`,`mes`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 -- --------------------------------------------------------
 
 --

@@ -1,6 +1,12 @@
 const { pool } = require('../config/database');
 
 const VALID_PAYMENT_TYPES = new Set(['MENSUAL', 'QUINCENAL']);
+const VALID_OVERTIME_TYPES = new Set([
+  'EXTRA_DIURNA',
+  'EXTRA_NOCTURNA',
+  'EXTRA_DIURNA_DOMINICAL_FESTIVO',
+  'EXTRA_NOCTURNA_DOMINICAL_FESTIVO'
+]);
 
 const createPayroll = async (req, res) => {
   const connection = await pool.getConnection();
@@ -13,7 +19,8 @@ const createPayroll = async (req, res) => {
       tipo_pago,
       total_devengado,
       total_deducciones,
-      detalles = []
+      detalles = [],
+      horas_extras = []
     } = req.body;
 
     if (!id_empleado || !fecha_inicio || !fecha_corte) {
@@ -33,6 +40,20 @@ const createPayroll = async (req, res) => {
         message: 'Los valores de nómina no pueden ser negativos'
       });
     }
+
+    const overtimeRows = Array.isArray(horas_extras)
+      ? horas_extras
+          .filter((item) => item && VALID_OVERTIME_TYPES.has(item.tipo_hora))
+          .map((item) => ({
+            tipo_hora: item.tipo_hora,
+            porcentaje_recargo: Number(item.porcentaje_recargo) || 0,
+            horas: Number(item.horas) || 0,
+            valor_hora_base: Number(item.valor_hora_base) || 0,
+            valor_hora_extra: Number(item.valor_hora_extra) || 0,
+            valor_total: Number(item.valor_total) || 0
+          }))
+          .filter((item) => item.horas > 0 && item.valor_total >= 0)
+      : [];
 
     await connection.beginTransaction();
 
@@ -56,6 +77,45 @@ const createPayroll = async (req, res) => {
         );
       }
     }
+
+    if (overtimeRows.length > 0) {
+      const overtimeInsertRows = overtimeRows.map((row) => [
+        idNomina,
+        row.tipo_hora,
+        row.porcentaje_recargo,
+        row.horas,
+        row.valor_hora_base,
+        row.valor_hora_extra,
+        row.valor_total
+      ]);
+
+      await connection.query(
+        `INSERT INTO horas_extra_nomina
+          (id_nomina, tipo_hora, porcentaje_recargo, horas, valor_hora_base, valor_hora_extra, valor_total)
+         VALUES ?`,
+        [overtimeInsertRows]
+      );
+    }
+
+    const corteDate = new Date(fecha_corte);
+    const anio = corteDate.getUTCFullYear();
+    const mes = corteDate.getUTCMonth() + 1;
+    const totalHorasExtra = overtimeRows.reduce((acc, row) => acc + row.horas, 0);
+    const valorHorasExtra = overtimeRows.reduce((acc, row) => acc + row.valor_total, 0);
+
+    await connection.query(
+      `INSERT INTO reporte_nomina_mensual
+        (anio, mes, total_nominas, total_devengado, total_deducciones, total_pagado, total_horas_extra, valor_horas_extra)
+       VALUES (?, ?, 1, ?, ?, (? - ?), ?, ?)
+       ON DUPLICATE KEY UPDATE
+         total_nominas = total_nominas + 1,
+         total_devengado = total_devengado + VALUES(total_devengado),
+         total_deducciones = total_deducciones + VALUES(total_deducciones),
+         total_pagado = total_pagado + VALUES(total_pagado),
+         total_horas_extra = total_horas_extra + VALUES(total_horas_extra),
+         valor_horas_extra = valor_horas_extra + VALUES(valor_horas_extra)`,
+      [anio, mes, devengado, deducciones, devengado, deducciones, totalHorasExtra, valorHorasExtra]
+    );
 
     await connection.commit();
 
