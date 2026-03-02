@@ -61,46 +61,11 @@ CREATE TABLE `departamentos` (
 --
 
 INSERT INTO `departamentos` (`id_departamento`, `nombre_departamento`) VALUES
-(1, 'Gerencia General'),
-(2, 'Administración'),
-(3, 'Recursos Humanos (Gestión Humana)'),
-(4, 'Finanzas'),
-(5, 'Contabilidad'),
-(6, 'Tesorería'),
-(7, 'Compras'),
-(8, 'Ventas'),
-(9, 'Comercial'),
-(10, 'Mercadeo (Marketing)'),
-(11, 'Servicio al Cliente'),
-(12, 'Operaciones'),
-(13, 'Producción'),
-(14, 'Logística'),
-(15, 'Almacén / Bodega'),
-(16, 'Tecnología de la Información (TI / Sistemas)'),
-(17, 'Desarrollo de Software'),
-(18, 'Infraestructura Tecnológica'),
-(19, 'Seguridad de la Información'),
-(20, 'Calidad'),
-(21, 'Auditoría Interna'),
-(22, 'Jurídica / Legal'),
-(23, 'Planeación / Estrategia'),
-(24, 'Investigación y Desarrollo (I+D)'),
-(25, 'Mantenimiento'),
-(26, 'Seguridad Física'),
-(27, 'SST (Seguridad y Salud en el Trabajo)'),
-(28, 'Proyectos (PMO)'),
-(29, 'Ingeniería'),
-(30, 'Diseño'),
-(31, 'Operaciones de Campo'),
-(32, 'Call Center'),
-(33, 'Soporte Técnico'),
-(34, 'Relaciones Públicas'),
-(35, 'Comercio Exterior'),
-(36, 'Abastecimiento'),
-(37, 'Gestión Documental'),
-(38, 'Capacitación'),
-(39, 'Innovación'),
-(40, 'Experiencia de Usuario (UX/UI)');
+(1, 'Recursos Humanos'),
+(2, 'Contabilidad'),
+(3, 'Desarrollo'),
+(4, 'Soporte'),
+(5, 'Ventas');
 
 -- --------------------------------------------------------
 
@@ -127,7 +92,6 @@ CREATE TABLE `empleados` (
   `apellidos` varchar(100) NOT NULL,
   `tipo_identificacion` enum('CC','TI','CE','PASAPORTE') NOT NULL,
   `numero_identificacion` varchar(50) NOT NULL,
-  `sueldo` decimal(12,2) NOT NULL DEFAULT 0.00,
   `fecha_nacimiento` date NOT NULL,
   `fecha_ingreso` date NOT NULL,
   `id_cargo` int(11) NOT NULL,
@@ -138,10 +102,10 @@ CREATE TABLE `empleados` (
 -- Volcado de datos para la tabla `empleados`
 --
 
-INSERT INTO `empleados` (`id_empleado`, `nombres`, `apellidos`, `tipo_identificacion`, `numero_identificacion`, `sueldo`, `fecha_nacimiento`, `fecha_ingreso`, `id_cargo`, `id_departamento`) VALUES
-(5, 'xiomara', 'arverja', 'CC', '12345678', 1600000.00, '2025-11-12', '2025-11-12', 1, 1),
-(6, 'Daniel', 'Perez Rojas', 'CC', '1090273907', 2100000.00, '2006-08-10', '2024-11-18', 2, 3),
-(7, 'Daniel', 'Pereezz ROjas', 'CC', '1023205511', 1950000.00, '2004-06-10', '2024-01-02', 2, 3);
+INSERT INTO `empleados` (`id_empleado`, `nombres`, `apellidos`, `tipo_identificacion`, `numero_identificacion`, `fecha_nacimiento`, `fecha_ingreso`, `id_cargo`, `id_departamento`) VALUES
+(5, 'xiomara', 'arverja', 'CC', '12345678', '2025-11-12', '2025-11-12', 1, 1),
+(6, 'Daniel', 'Perez Rojas', 'CC', '1090273907', '2006-08-10', '2024-11-18', 2, 3),
+(7, 'Daniel', 'Pereezz ROjas', 'CC', '1023205511', '2004-06-10', '2024-01-02', 2, 3);
 
 -- --------------------------------------------------------
 
@@ -161,6 +125,45 @@ CREATE TABLE `nomina` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `tipo_hora_extra`
+-- Tipos de horas extra y recargos - Legislación Colombia 2026
+--
+
+CREATE TABLE `tipo_hora_extra` (
+  `id_tipo_hora_extra` int(11) NOT NULL,
+  `codigo` varchar(50) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `descripcion` text DEFAULT NULL,
+  `porcentaje_recargo` decimal(5,2) NOT NULL,
+  `categoria` enum('HORA_EXTRA','RECARGO') NOT NULL DEFAULT 'HORA_EXTRA',
+  `fecha_vigencia_inicio` date NOT NULL,
+  `fecha_vigencia_fin` date DEFAULT NULL,
+  `creado_en` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_tipo_hora_extra`),
+  UNIQUE KEY `uk_tipo_codigo_vigencia` (`codigo`,`fecha_vigencia_inicio`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Estructura de tabla para la tabla `registro_horas_extra`
+--
+
+CREATE TABLE `registro_horas_extra` (
+  `id_registro` int(11) NOT NULL,
+  `id_nomina` int(11) NOT NULL,
+  `id_tipo_hora_extra` int(11) NOT NULL,
+  `cantidad_horas` decimal(5,2) NOT NULL,
+  `valor_hora_ordinaria` decimal(12,2) NOT NULL,
+  `valor_calculado` decimal(12,2) NOT NULL,
+  `fecha_trabajo` date DEFAULT NULL,
+  `creado_en` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_registro`),
+  KEY `idx_registro_nomina` (`id_nomina`),
+  KEY `idx_registro_tipo` (`id_tipo_hora_extra`),
+  CONSTRAINT `registro_horas_extra_ibfk_1` FOREIGN KEY (`id_nomina`) REFERENCES `nomina` (`id_nomina`) ON DELETE CASCADE,
+  CONSTRAINT `registro_horas_extra_ibfk_2` FOREIGN KEY (`id_tipo_hora_extra`) REFERENCES `tipo_hora_extra` (`id_tipo_hora_extra`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Estructura de tabla para la tabla `password_reset_tokens`
@@ -312,7 +315,7 @@ ALTER TABLE `cargos`
 -- AUTO_INCREMENT de la tabla `departamentos`
 --
 ALTER TABLE `departamentos`
-  MODIFY `id_departamento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `id_departamento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_nomina`

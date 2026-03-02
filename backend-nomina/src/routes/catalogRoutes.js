@@ -8,6 +8,7 @@ ENDPOINTS DISPONIBLES:
 - GET /api/catalogs/cargos - Lista de cargos
 - GET /api/catalogs/departamentos - Lista de departamentos
 - GET /api/catalogs/roles - Lista de roles
+- GET /api/catalogs/tipos-hora-extra - Tipos de horas extra Colombia 2026 (?fecha=YYYY-MM-DD opcional)
 
 Todos requieren autenticación
 */
@@ -19,7 +20,8 @@ const router = express.Router();
 const {
     getAllCargos,
     getAllDepartamentos,
-    getAllRoles
+    getAllRoles,
+    getAllTiposHoraExtra
 } = require('../controllers/catalogController');
 
 // Importar middlewares
@@ -43,6 +45,10 @@ router.get('/departamentos', getAllDepartamentos);
 
 // GET /api/catalogs/roles
 router.get('/roles', getAllRoles);
+
+// GET /api/catalogs/tipos-hora-extra (opcional: ?fecha=2026-02-15 para vigentes)
+router.get('/tipos-hora-extra', getAllTiposHoraExtra);
+
 
 // ============================================
 // EXPORTAR ROUTER

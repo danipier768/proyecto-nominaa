@@ -1,0 +1,44 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+model TipoHoraExtra {
+  idTipoHoraExtra     Int       @id @default(autoincrement())
+  codigo              String
+  nombre              String
+  descripcion         String?
+  porcentajeRecargo   Decimal   @db.Decimal(5,2)
+  categoria           Categoria @default(HORA_EXTRA)
+  fechaVigenciaInicio DateTime
+  fechaVigenciaFin    DateTime?
+  creadoEn            DateTime  @default(now())
+  registros RegistroHorasExtra[]
+  
+  @@unique([codigo, fechaVigenciaInicio])
+  @@index([fechaVigenciaInicio, fechaVigenciaFin])
+  @@map("tipo_hora_extra")
+}
+
+model RegistroHorasExtra {
+  idRegistro         Int      @id @default(autoincrement())
+  idTipoHoraExtra    Int
+  cantidadHoras      Decimal  @db.Decimal(5,2)
+  valorHoraOrdinaria Decimal  @db.Decimal(12,2)
+  valorCalculado     Decimal  @db.Decimal(12,2)
+  fechaTrabajo       DateTime?
+  creadoEn           DateTime @default(now())
+  tipoHoraExtra TipoHoraExtra @relation(fields: [idTipoHoraExtra], references: [idTipoHoraExtra])
+  
+  @@index([idTipoHoraExtra])
+  @@index([fechaTrabajo])
+  @@map("registro_horas_extra")
+}
+
+enum Categoria {
+  HORA_EXTRA
+  RECARGO
+}
